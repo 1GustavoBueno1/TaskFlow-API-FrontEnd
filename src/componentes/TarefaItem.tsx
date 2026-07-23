@@ -1,15 +1,15 @@
+import type { Tarefa } from "../type";
+
 interface TarefaItemProps {
-    titulo: string;
-    concluida: boolean
-    prioridade?: "baixa" | "media" | "alta";
+    tarefa: Tarefa
 }
 
-function TarefaItem({titulo, concluida, prioridade = "media"}: TarefaItemProps) {
+function TarefaItem({tarefa}: TarefaItemProps) {
     return (
         <div>
-            <strong>{titulo}</strong>
-            <span>  {concluida ? "v": "o"}  </span>
-           <em>Prioridade: ({prioridade})</em>
+            <strong>{tarefa.titulo}</strong>
+            <span>  {tarefa.concluida ? "v": "o"}  </span>
+           <em>Prioridade: ({tarefa.prioridade})</em>
         </div>
     )
 }
