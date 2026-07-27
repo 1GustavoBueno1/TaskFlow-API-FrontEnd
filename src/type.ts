@@ -1,6 +1,7 @@
 export interface Tarefa {
-    id: number
-    titulo: string
-    concluida: boolean
-    prioridade?: "baixa" | "media" | "alta"
+    id: number;
+    nome: string;
+    descrição?: string;
+    status: boolean;
+
 }

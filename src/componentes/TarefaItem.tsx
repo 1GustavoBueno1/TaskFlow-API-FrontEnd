@@ -7,9 +7,9 @@ interface TarefaItemProps {
 function TarefaItem({tarefa}: TarefaItemProps) {
     return (
         <div>
-            <strong>{tarefa.titulo}</strong>
-            <span>  {tarefa.concluida ? "v": "o"}  </span>
-           <em>Prioridade: ({tarefa.prioridade})</em>
+            <strong>{tarefa.nome}</strong>
+            <span>  {tarefa.status ? "v": "o"}  </span>
+           <em>Descrição: ({tarefa.descrição})</em>
         </div>
     )
 }
