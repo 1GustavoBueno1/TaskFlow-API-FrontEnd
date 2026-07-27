@@ -37,7 +37,7 @@ async function handleCriar(e: React.FormEvent) {
     setEnviando(true)
     seterroOperacao(null)
     try {
-      const resposta = await fetch(`${API}/tarefas/visualizar_tarefas`, {
+      const resposta = await fetch(`${API}/tarefas/criar_tarefa`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
