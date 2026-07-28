@@ -1,87 +1,101 @@
 import React, { useState, useEffect } from "react"
 import TarefaItem from "./componentes/TarefaItem"
 import type { Tarefa } from "./type"
+
 const API = "http://localhost:8000";
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg0OTQ1OTY0fQ.JvS2HR-YtuocWuQzljNkOQ4cTx9FGI1vu_qrTJCi38s"
+const TOKEN = "";
 
 function App() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [NovoTitulo, setNovoTitulo] = useState("");
-  const [enviando, setEnviando] = useState((false));
-  const [erroOperacao, seterroOperacao] = useState<string | null>(null);
+  const [novoNome, setNovoNome] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [erroOperacao, setErroOperacao] = useState<string | null>(null);
   const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
-useEffect(() => {
+
+  // AQUI: no corpo do componente, fora do useEffect
   async function carregarTarefas() {
     try {
-      const resposta = await fetch("http://localhost:8000/tarefas/visualizar_tarefas", {headers: {Authorization: `Bearer ${TOKEN}`},});
+      const resposta = await fetch(`${API}/tarefas/visualizar_tarefas`, {
+        headers: { Authorization: `Bearer ${TOKEN}` },
+      });
       if (!resposta.ok) {
-        throw new Error(`Erro ${resposta.status}`)
+        throw new Error(`Erro ${resposta.status}`);
       }
-      const dados: Tarefa[] = await resposta.json()
+      const dados: Tarefa[] = await resposta.json();
       setTarefas(dados);
-    }
-    catch (e) {
-      setErroCarregamento(e instanceof Error ? e.message: "Erro desconhecido");
-    }
-    finally {
+    } catch (e) {
+      setErroCarregamento(e instanceof Error ? e.message : "Erro desconhecido");
+    } finally {
       setCarregando(false);
     }
   }
-  carregarTarefas()
-}, [])
-async function handleCriar(e: React.FormEvent) {
+
+  // o useEffect só chama
+  useEffect(() => {
+    carregarTarefas();
+  }, []);
+
+  async function handleCriar(e: React.FormEvent) {
     e.preventDefault();
-    const Titulo = NovoTitulo.trim()
-    if (!Titulo) return;
-    setEnviando(true)
-    seterroOperacao(null)
+
+    const nome = novoNome.trim();
+    if (!nome) return;
+
+    setEnviando(true);
+    setErroOperacao(null);
+
     try {
-      const resposta = await fetch(`${API}/tarefas/criar_tarefa`, {
+      const resposta = await fetch(`${API}/tarefas/criar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${TOKEN}`,
         },
-        body: JSON.stringify({Titulo})
-      })
-      if (!resposta.ok){
-        const corpo = await resposta.json().catch(() => null)
-        throw new Error(corpo?.detail ?? `Erro ${resposta.status}`)
+        body: JSON.stringify({ nome }),
+      });
 
+      if (!resposta.ok) {
+        const corpo = await resposta.json().catch(() => null);
+        throw new Error(corpo?.detail ?? `Erro ${resposta.status}`);
       }
-      const criada: Tarefa = await resposta.json()
-      setTarefas((anteriores) => [...anteriores, criada])
-      setNovoTitulo("")
-    } catch(e) {
-        seterroOperacao(e instanceof Error ? e.message : "Erro desconhecido");
+
+      await carregarTarefas();
+      setNovoNome("");
+    } catch (e) {
+      setErroOperacao(e instanceof Error ? e.message : "Erro desconhecido");
     } finally {
-      setEnviando(false)
+      setEnviando(false);
     }
   }
-if (carregando) return <p>Carregando...</p>
-if (erroCarregamento) return <p>Deu erro no carregamento: {erroCarregamento}</p>
 
-return (
-  <div>
-    <h1>Taskflow</h1>
-    <form onSubmit={handleCriar}>
-      <input 
-        value={NovoTitulo}
-        onChange={(e) => setNovoTitulo(e.target.value)}
-        placeholder="NovaTarefa"
-        disabled={enviando}
+  if (carregando) return <p>Carregando...</p>
+  if (erroCarregamento) return <p>Deu erro no carregamento: {erroCarregamento}</p>
+
+  return (
+    <div>
+      <h1>Taskflow</h1>
+
+      <form onSubmit={handleCriar}>
+        <input
+          value={novoNome}
+          onChange={(e) => setNovoNome(e.target.value)}
+          placeholder="Nova tarefa"
+          disabled={enviando}
         />
-        <button type="submit" disabled={enviando || !NovoTitulo.trim()}>
+        <button type="submit" disabled={enviando || !novoNome.trim()}>
           {enviando ? "Salvando..." : "Adicionar"}
         </button>
-        {erroOperacao && <p style={{ color: "red" }}>{erroOperacao}</p>}
-    </form>
-    {tarefas.length === 0 && <p>Nenhuma tarefa por aqui.</p>}
-    {tarefas.map((tarefa) => (<TarefaItem key={tarefa.id} tarefa={tarefa} />
-    ))}
-  </div>
-)
+      </form>
+
+      {erroOperacao && <p style={{ color: "red" }}>{erroOperacao}</p>}
+
+      {tarefas.length === 0 && <p>Nenhuma tarefa por aqui.</p>}
+      {tarefas.map((tarefa) => (
+        <TarefaItem key={tarefa.id} tarefa={tarefa} />
+      ))}
+    </div>
+  );
 }
 
 export default App
