@@ -3,7 +3,7 @@ import TarefaItem from "./componentes/TarefaItem"
 import type { Tarefa } from "./type"
 
 const API = "http://localhost:8000";
-const TOKEN = "";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg1MzU3ODI4fQ.gjLwuimLqiFH1tGqhOVEYsar2yU3XliBt9pj4sUh0KU";
 
 function App() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
@@ -13,7 +13,7 @@ function App() {
   const [erroOperacao, setErroOperacao] = useState<string | null>(null);
   const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
 
-  // AQUI: no corpo do componente, fora do useEffect
+
   async function carregarTarefas() {
     try {
       const resposta = await fetch(`${API}/tarefas/visualizar_tarefas`, {
@@ -31,11 +31,11 @@ function App() {
     }
   }
 
-  // o useEffect só chama
   useEffect(() => {
     carregarTarefas();
   }, []);
 
+  // Criar tarefas
   async function handleCriar(e: React.FormEvent) {
     e.preventDefault();
 
@@ -68,6 +68,22 @@ function App() {
       setEnviando(false);
     }
   }
+  async function handleDeletar(id :number) {
+    window.confirm("Excluir tarefa?")
+    try {
+      const resposta = await fetch(`${API}/tarefas/deletar_tarefa/${id}`, {
+      method: "DELETE",
+      headers: {Authorization: `Bearer ${TOKEN}`}
+      });
+      if (!resposta.ok) {
+          const corpo = await resposta.json().catch(() => null);
+          throw new Error(corpo?.detail ?? `Erro ${resposta.status}`);
+        }
+      await carregarTarefas()
+      } catch(e) {
+        setErroOperacao(e instanceof Error ? e.message: "Erro desconhecido")
+      }
+  }
 
   if (carregando) return <p>Carregando...</p>
   if (erroCarregamento) return <p>Deu erro no carregamento: {erroCarregamento}</p>
@@ -92,7 +108,7 @@ function App() {
 
       {tarefas.length === 0 && <p>Nenhuma tarefa por aqui.</p>}
       {tarefas.map((tarefa) => (
-        <TarefaItem key={tarefa.id} tarefa={tarefa} />
+        <TarefaItem key={tarefa.id} tarefa={tarefa} ondelete={handleDeletar} />
       ))}
     </div>
   );
