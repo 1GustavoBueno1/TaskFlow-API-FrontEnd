@@ -1,7 +1,7 @@
 export interface Tarefa {
     id: number;
     nome: string;
-    descrição?: string;
+    descricao?: string;
     status: boolean;
 
 }
