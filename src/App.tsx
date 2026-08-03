@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react"
 import TarefaItem from "./componentes/TarefaItem"
 import type { Tarefa } from "./type"
 import type {DadosEdicao} from "./componentes/TarefaItem"
+import Login from "./componentes/login"
 
 const API = "http://localhost:8000";
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg1NzI2NzAzfQ.X072aSpVVR5cZBsnwI9FM_JDWvZpwir0qKJN-H0NXhk";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg1Nzk2MzU3fQ.inAYh5H1v7h0PQOC_Cq3F1YuGPSrBY5Y3JqLGMeos8Q";
 
 function App() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
@@ -14,6 +15,9 @@ function App() {
   const [erroOperacao, setErroOperacao] = useState<string | null>(null);
   const [erroCarregamento, setErroCarregamento] = useState<string | null>(null);
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(
+    () => localStorage.getItem("token")
+  );
 
 
   async function carregarTarefas() {
@@ -34,9 +38,7 @@ function App() {
   }
 
   useEffect(() => {
-    carregarTarefas();
-  }, []);
-
+    if (token) carregarTarefas()}, [token])
   // Criar tarefas
   async function handleCriar(e: React.FormEvent) {
     e.preventDefault();
@@ -107,13 +109,25 @@ function App() {
         setErroOperacao(e instanceof Error ? e.message : "Erro desconhecido")
       }
     }
+    function handleLoginSucesso(novoToken: string) {
+      localStorage.setItem("token", novoToken)
+      setToken(novoToken)
+    }
+    function handleLogout() {
+      localStorage.removeItem("token");
+      setToken(null)
+    }
+    if (!token) {
+      return <Login onLogin={handleLoginSucesso}/>
+    }
+
   if (carregando) return <p>Carregando...</p>
   if (erroCarregamento) return <p>Deu erro no carregamento: {erroCarregamento}</p>
-
   return (
     <div>
       <h1>Taskflow</h1>
-
+      <button onClick={handleLogout}>Sair</button>
+      
       <form onSubmit={handleCriar}>
         <input
           value={novoNome}
