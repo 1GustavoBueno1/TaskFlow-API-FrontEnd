@@ -1,30 +1,57 @@
 import {useState } from "react";
 import type { Tarefa } from "../type";
 
+export interface DadosEdicao {
+    nome: string;
+    descricao: string;
+    status: string;
+}
+
 interface TarefaItemProps {
     tarefa: Tarefa;
     estaEditando: boolean;
     onEditar: (id: number) => void;
-    onSalvar: (id: number, novoNome: string) => void;
+    onSalvar: (id: number, dados: DadosEdicao) => void;
     onCancelar: () => void;
     ondelete: (id: number) => void;
 }
 
 function TarefaItem({tarefa, estaEditando, onEditar, onSalvar, onCancelar, ondelete}: TarefaItemProps) {
-    const [texto, setTexto] = useState(tarefa.nome)
+    const [form, setForm] = useState ({
+        nome: tarefa.nome,
+        descricao: tarefa.descricao ?? "",
+        status: tarefa.status
+    })
+    async function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+          const {name, value} = e.target
+          setForm((anterior) => ({ ...anterior, [name]: value}));
+        }
     if (estaEditando) {
         return (
             <div>
-                <input value={texto} onChange={(e) => setTexto((e.target.value))} />
-                <button onClick={() => onSalvar(tarefa.id, texto)}>Salvar</button>
-                <button onClick={onCancelar}>Cancelar</button>
+                <input name="nome"
+                value={form.nome}
+                onChange={handleChange}
+                placeholder="Nome" 
+                />
+                <input name="descricao"
+                value={form.descricao}
+                onChange={handleChange}
+                placeholder="Descrição" 
+                />
+                <select name="status" value={form.status} onChange={handleChange}>
+                    <option value="pendente">Pendente</option>
+                    <option value="concluida">Concluida</option>
+                </select>
+                <button onClick={() => onSalvar(tarefa.id, form)}>Salvar</button>
+                <button onClick={() => onCancelar()}>Cancelar</button>
             </div>
         );
     }
     return (
         <div>
             <strong>{tarefa.nome}</strong>
-            <span>  {tarefa.status ? "v": "o"}  </span>
+            <span>  {tarefa.status === "concluida" ? "✓" : "o"}  </span>
            <em>Descrição: ({tarefa.descricao})</em>
            <p>id: {tarefa.id}</p>
            <button onClick={() => onEditar(tarefa.id)}>Editar</button>

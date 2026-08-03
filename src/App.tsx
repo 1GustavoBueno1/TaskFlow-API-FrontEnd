@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react"
 import TarefaItem from "./componentes/TarefaItem"
 import type { Tarefa } from "./type"
+import type {DadosEdicao} from "./componentes/TarefaItem"
 
 const API = "http://localhost:8000";
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg1NjM5ODk1fQ.4DNMfs6HXcvnQDpN83A0z5rQKFGYIlqczdK8kGSZda0";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzg1NzI2NzAzfQ.X072aSpVVR5cZBsnwI9FM_JDWvZpwir0qKJN-H0NXhk";
 
 function App() {
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
@@ -85,8 +86,9 @@ function App() {
         setErroOperacao(e instanceof Error ? e.message: "Erro desconhecido")
       }
     }
-    async function handleEditar(id: Number, novoNome: string) {
+    async function handleEditar(id: number, dados: DadosEdicao) {
       setErroCarregamento(null);
+      
       try {
           const resposta = await fetch(`${API}/tarefas/editar_tarefa/${id}`, 
           {
@@ -94,7 +96,7 @@ function App() {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${TOKEN}`
-            }, body: JSON.stringify({nome: novoNome, descricao: null, status: "pedente"})})
+            }, body: JSON.stringify({nome: dados.nome, descricao: dados.descricao, status: dados.status})})
           if (!resposta.ok) {
             const corpo = await resposta.json().catch(() => null);
             throw new Error((corpo?.detail ?? `Erro ${resposta.status}`))
